@@ -1,42 +1,66 @@
-import React, { createContext, useState, useContext, useEffect } from 'react';
+import { createContext, useState, useContext } from 'react';
 import api from '../services/api';
 
 const AuthContext = createContext({});
 
-export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+// Decodifica o payload do JWT para extrair dados como o adminId
+function decodificarToken(token) {
+  try {
+    const payload = token.split('.')[1];
+    const base64 = payload.replace(/-/g, '+').replace(/_/g, '/');
+    const json = decodeURIComponent(
+      atob(base64)
+        .split('')
+        .map((c) => '%' + c.charCodeAt(0).toString(16).padStart(2, '0'))
+        .join('')
+    );
+    return JSON.parse(json);
+  } catch {
+    return null;
+  }
+}
 
-  useEffect(() => {
-    // Restaura a sessão do administrador se houver dados gravados no navegador
+export function AuthProvider({ children }) {
+  // Restaura a sessão do administrador de forma síncrona na inicialização
+  const [user, setUser] = useState(() => {
     const tokenSalvo = localStorage.getItem('@GerenciadorEventos:token');
     const adminIdSalvo = localStorage.getItem('@GerenciadorEventos:adminId');
 
     if (tokenSalvo && adminIdSalvo) {
-      setUser({ id: adminIdSalvo });
+      return { id: adminIdSalvo };
     }
-    setLoading(false);
-  }, []);
+
+    return null;
+  });
 
   const loginService = async (email, senha, lembrar) => {
     try {
-      // Dispara a requisição HTTP POST para o endpoint correto de autenticação
+      // Dispara a requisição HTTP POST para o endpoint de autenticação
       const response = await api.post('/auth/login', { email, senha });
-      
-      // 🔴 TRATAMENTO INTELIGENTE DO DTO: Captura as chaves independentemente da grafia do Java
-      const token = response.data.token || response.data.tokenJwt;
-      const id = response.data.id || response.data.adminId || response.data.admin?.id;
 
-      // Validação de segurança: Interrompe o fluxo se a resposta do banco vier incompleta
+      const token = response.data.token || response.data.tokenJwt;
+
+      // O backend retorna apenas o token; o adminId é extraído do JWT
+      const dadosToken = decodificarToken(token);
+      const id =
+        response.data.id ||
+        response.data.adminId ||
+        response.data.admin?.id ||
+        dadosToken?.adminId;
+
+      // Validação de segurança: interrompe o fluxo se faltarem dados essenciais
       if (!token || !id) {
-        throw new Error("O servidor respondeu com sucesso, mas omitiu chaves de identificação essenciais.");
+        throw new Error(
+          'O servidor respondeu com sucesso, mas omitiu as chaves de identificação essenciais.',
+          { cause: response }
+        );
       }
 
-      // Salva os dados de sessão obrigatórios de forma persistente no LocalStorage
+      // Salva os dados de sessão obrigatórios no LocalStorage
       localStorage.setItem('@GerenciadorEventos:token', token);
       localStorage.setItem('@GerenciadorEventos:adminId', String(id));
 
-      // Regra de Negócio Exigida: Gerencia a retenção de dados com base na opção "Gravar Senha"
+      // Regra de negócio: gerencia a retenção de dados conforme "Gravar Senha"
       if (lembrar) {
         localStorage.setItem('@GerenciadorEventos:lembrarEmail', email);
         localStorage.setItem('@GerenciadorEventos:lembrarSenha', senha);
@@ -45,14 +69,13 @@ export function AuthProvider({ children }) {
         localStorage.removeItem('@GerenciadorEventos:lembrarSenha');
       }
 
-      // Atualiza o estado global de autenticação informando o ID ao React
+      // Atualiza o estado global informando o ID ao React
       setUser({ id: String(id) });
       return { token, id };
-
     } catch (error) {
-      // Trata erros de rede ou respostas negativas da API (Ex: 401/403 do Spring Boot)
+      // Trata erros de rede ou respostas negativas da API (Ex: 401/403)
       const mensagemErro = error.response?.data?.message || 'E-mail ou senha incorretos.';
-      throw new Error(mensagemErro);
+      throw new Error(mensagemErro, { cause: error });
     }
   };
 
@@ -64,12 +87,13 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <AuthContext.Provider value={{ signed: !!user, user, loginService, logoutService, loading }}>
+    <AuthContext.Provider value={{ signed: !!user, user, loginService, logoutService }}>
       {children}
     </AuthContext.Provider>
   );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useAuth() {
   return useContext(AuthContext);
 }

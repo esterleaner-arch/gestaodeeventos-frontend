@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import api from '../../services/api';
@@ -24,35 +24,68 @@ export default function Home() {
   const [imagemUrl, setImagemUrl] = useState('');
 
   // 🔴 1. BUSCAR EVENTOS DO BANCO (Requisito 3 - GET por adminId)
-  const carregarEventos = async () => {
-    if (!user?.id) return;
-    try {
-      setLoading(true);
-      // Consome o endpoint correto que mapeamos: /api/eventos?adminId=X
-      const response = await api.get(`/eventos?adminId=${user.id}`);
-      setEventos(response.data);
-    } catch (err) {
-      setErro('Falha ao carregar a listagem de eventos.');
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  // Função pura de busca: retorna os dados sem mexer em estado (reutilizável)
+  const buscarEventos = useCallback(async () => {
+    if (!user?.id) return [];
+    // Consome o endpoint correto que mapeamos: /api/eventos?adminId=X
+    const response = await api.get(`/eventos?adminId=${user.id}`);
+    return response.data;
+  }, [user]);
 
   useEffect(() => {
-    carregarEventos();
-  }, [user]);
+    if (!user?.id) return;
+
+    let ativo = true;
+
+    // Atualiza o estado apenas dentro dos callbacks (padrão recomendado)
+    buscarEventos()
+      .then((dados) => {
+        if (ativo) setEventos(dados);
+      })
+      .catch((err) => {
+        if (ativo) {
+          setErro('Falha ao carregar a listagem de eventos.');
+          console.error(err);
+        }
+      })
+      .finally(() => {
+        if (ativo) setLoading(false);
+      });
+
+    return () => {
+      ativo = false;
+    };
+  }, [buscarEventos, user]);
 
   // 🔴 2. SALVAR OU ATUALIZAR EVENTO (Requisito 4 e 5 - POST e PUT)
   const handleSalvarEvento = async (e) => {
     e.preventDefault();
     setErro('');
 
+    // Validação manual: o form usa noValidate para o navegador não travar silenciosamente
+    if (!nome.trim()) {
+      setErro('Informe o nome do evento.');
+      return;
+    }
+    if (!data) {
+      setErro('Informe a data do evento.');
+      return;
+    }
+    if (!localizacao.trim()) {
+      setErro('Informe a localização do evento.');
+      return;
+    }
+    if (!user?.id) {
+      setErro('Sessão expirada. Faça login novamente.');
+      return;
+    }
+
     const payload = {
-      nome,
+      nome: nome.trim(),
       data,
-      localizacao,
-      imagemUrl: imagemUrl || 'https://unsplash.com',
+      localizacao: localizacao.trim(),
+      // Capa opcional: sem URL, envia null e o card exibe um placeholder
+      imagemUrl: imagemUrl.trim() || null,
       adminId: Number(user.id)
     };
 
@@ -72,7 +105,8 @@ export default function Home() {
       }
 
       // Recarrega a lista atualizada direto do banco de dados
-      await carregarEventos();
+      const dados = await buscarEventos();
+      setEventos(dados);
       fecharModal();
     } catch (err) {
       setErro(err.response?.data?.message || 'Erro ao salvar o evento. Verifique os dados.');
@@ -86,7 +120,7 @@ export default function Home() {
         await api.delete(`/eventos/${id}`);
         // Remove visualmente da lista sem precisar recarregar a página inteira
         setEventos(eventos.filter(evento => evento.id !== id));
-      } catch (err) {
+      } catch {
         alert('Erro ao excluir o evento da base de dados.');
       }
     }
@@ -97,7 +131,7 @@ export default function Home() {
     setEditandoId(evento.id);
     setNome(evento.nome);
     setData(evento.data);
-    localizacao && setLocalizacao(evento.localizacao);
+    setLocalizacao(evento.localizacao);
     setImagemUrl(evento.imagemUrl);
     setModalAberta(true);
   };
@@ -146,7 +180,13 @@ export default function Home() {
         <main className={styles.grid}>
           {eventos.map(evento => (
             <article key={evento.id} className={styles.card}>
-              <img src={evento.imagemUrl} alt={`Capa do evento ${evento.nome}`} className={styles.cardImage} />
+              {evento.imagemUrl ? (
+                <img src={evento.imagemUrl} alt={`Capa do evento ${evento.nome}`} className={styles.cardImage} />
+              ) : (
+                <div className={styles.cardImagePlaceholder} role="img" aria-label={`Evento ${evento.nome} sem imagem de capa`}>
+                  <span>Sem imagem de capa</span>
+                </div>
+              )}
               <div className={styles.cardContent}>
                 <h2 className={styles.cardTitle}>{evento.nome}</h2>
                 <p className={styles.cardText}><strong>Data:</strong> {evento.data}</p>
@@ -175,7 +215,8 @@ export default function Home() {
         <div className={styles.modalOverlay} role="dialog" aria-modal="true" aria-labelledby="modal-title">
           <div className={styles.modalContent}>
             <h2 id="modal-title">{editandoId ? 'Atualizar Evento' : 'Novo Evento'}</h2>
-            <form onSubmit={handleSalvarEvento} className={styles.form}>
+            {erro && <div className={styles.alertError} role="alert">{erro}</div>}
+            <form onSubmit={handleSalvarEvento} className={styles.form} noValidate>
               <div className={styles.inputGroup}>
                 <label htmlFor="modal-nome">Nome do Evento</label>
                 <input 
@@ -196,7 +237,7 @@ export default function Home() {
                 <input id="modal-local" type="text" value={localizacao} onChange={e => setLocalizacao(e.target.value)} required />
               </div>
               <div className={styles.inputGroup}>
-                <label htmlFor="modal-img">URL da Imagem de Capa</label>
+                <label htmlFor="modal-img">URL da Imagem de Capa (opcional)</label>
                 <input id="modal-img" type="url" value={imagemUrl} onChange={e => setImagemUrl(e.target.value)} placeholder="https://..." />
               </div>
               <div className={styles.modalActions}>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import styles from './Login.module.css';
@@ -7,22 +7,20 @@ export default function Login() {
   const { loginService } = useAuth();
   const navigate = useNavigate();
 
-  const [email, setEmail] = useState('');
-  const [senha, setSenha] = useState('');
-  const [gravarSenha, setGravarSenha] = useState(false);
-  const [erro, setErro] = useState('');
-  const [carregando, setCarregando] = useState(false);
-
-  // Recupera credenciais automáticas caso tenha optado por Gravar Senha
-  useEffect(() => {
+  // Recupera credenciais gravadas de forma síncrona na inicialização
+  const [email, setEmail] = useState(
+    () => localStorage.getItem('@GerenciadorEventos:lembrarEmail') || ''
+  );
+  const [senha, setSenha] = useState(
+    () => localStorage.getItem('@GerenciadorEventos:lembrarSenha') || ''
+  );
+  const [gravarSenha, setGravarSenha] = useState(() => {
     const emailSalvo = localStorage.getItem('@GerenciadorEventos:lembrarEmail');
     const senhaSalva = localStorage.getItem('@GerenciadorEventos:lembrarSenha');
-    if (emailSalvo && senhaSalva) {
-      setEmail(emailSalvo);
-      setSenha(senhaSalva);
-      setGravarSenha(true);
-    }
-  }, []);
+    return Boolean(emailSalvo && senhaSalva);
+  });
+  const [erro, setErro] = useState('');
+  const [carregando, setCarregando] = useState(false);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -34,8 +32,10 @@ export default function Login() {
       await loginService(email, senha, gravarSenha);
       navigate('/home');
     } catch (err) {
-      setErro(err.message || 'Usuário ou senha inválidos.');
+      // Se falhar, captura a mensagem de erro do backend para o alerta vermelho
+      setErro(err.message || 'E-mail ou senha incorretos.');
     } finally {
+      // 🔴 CORREÇÃO DO BOTÃO: Garante o destravamento tanto em caso de erro quanto de sucesso
       setCarregando(false);
     }
   };
@@ -92,7 +92,7 @@ export default function Login() {
               disabled={carregando}
             />
             <label htmlFor="gravarSenha" className={styles.checkboxLabel}>
-              Gravar Senha para acesso rápido
+              Gravar senha para acesso rápido
             </label>
           </div>
 

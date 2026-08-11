@@ -1,15 +1,22 @@
 import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
 import styles from './Login.module.css';
 
 export default function Login() {
+  const { loginService } = useAuth();
+  const navigate = useNavigate();
+
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
   const [gravarSenha, setGravarSenha] = useState(false);
+  const [erro, setErro] = useState('');
+  const [carregando, setCarregando] = useState(false);
 
-  // Carrega as credenciais salvas se o usuário optou por "Gravar Senha" anteriormente
+  // Recupera credenciais automáticas caso tenha optado por Gravar Senha
   useEffect(() => {
-    const emailSalvo = localStorage.getItem('@GerenciadorEventos:email');
-    const senhaSalva = localStorage.getItem('@GerenciadorEventos:senha');
+    const emailSalvo = localStorage.getItem('@GerenciadorEventos:lembrarEmail');
+    const senhaSalva = localStorage.getItem('@GerenciadorEventos:lembrarSenha');
     if (emailSalvo && senhaSalva) {
       setEmail(emailSalvo);
       setSenha(senhaSalva);
@@ -17,30 +24,35 @@ export default function Login() {
     }
   }, []);
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    
-    // Regra de Negócio: Gravar Senha localmente para acesso rápido nas próximas vezes
-    if (gravarSenha) {
-      localStorage.setItem('@GerenciadorEventos:email', email);
-      localStorage.setItem('@GerenciadorEventos:senha', senha);
-    } else {
-      localStorage.removeItem('@GerenciadorEventos:email');
-      localStorage.removeItem('@GerenciadorEventos:senha');
-    }
+    setErro('');
+    setCarregando(true);
 
-    console.log('Disparando login para a API...', { email, senha });
+    try {
+      // Dispara o login real mapeado no Contexto e integrado via Axios
+      await loginService(email, senha, gravarSenha);
+      navigate('/home');
+    } catch (err) {
+      setErro(err.message || 'Usuário ou senha inválidos.');
+    } finally {
+      setCarregando(false);
+    }
   };
 
   return (
     <main className={styles.container}>
-      {/* aria-labelledby associa o título ao card para leitores de tela */}
       <section className={styles.card} aria-labelledby="login-title">
         <h1 id="login-title" className={styles.title}>Login do Administrador</h1>
         
         <form onSubmit={handleLogin} className={styles.form} noValidate>
+          {erro && (
+            <div className={styles.alertError} role="alert" aria-live="assertive">
+              {erro}
+            </div>
+          )}
+
           <div className={styles.inputGroup}>
-            {/* O htmlFor conecta explicitamente o label ao input para acessibilidade */}
             <label htmlFor="email" className={styles.label}>E-mail</label>
             <input
               type="email"
@@ -49,6 +61,7 @@ export default function Login() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="exemplo@email.com"
+              disabled={carregando}
               required
               aria-required="true"
             />
@@ -63,6 +76,7 @@ export default function Login() {
               value={senha}
               onChange={(e) => setSenha(e.target.value)}
               placeholder="Sua senha segura"
+              disabled={carregando}
               required
               aria-required="true"
             />
@@ -75,6 +89,7 @@ export default function Login() {
               className={styles.checkbox}
               checked={gravarSenha}
               onChange={(e) => setGravarSenha(e.target.checked)}
+              disabled={carregando}
             />
             <label htmlFor="gravarSenha" className={styles.checkboxLabel}>
               Gravar Senha para acesso rápido
@@ -82,12 +97,12 @@ export default function Login() {
           </div>
 
           <div className={styles.actions}>
-            <button type="submit" className={styles.buttonPrimary}>
-              Entrar
+            <button type="submit" className={styles.buttonPrimary} disabled={carregando}>
+              {carregando ? 'Autenticando...' : 'Entrar'}
             </button>
-            <button type="button" className={styles.buttonSecondary}>
+            <Link to="/cadastro" className={styles.buttonSecondary} role="button">
               Cadastrar-se
-            </button>
+            </Link>
           </div>
         </form>
       </section>

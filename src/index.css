@@ -6,12 +6,53 @@
   --accent-light: #89E1F0;     /* Ciano Claro para Linhas de Destaque */
   --muted-teal: #3b6673;       /* Azul Escuro Fosco para Labels e Subtítulos */
   --bg-soft: #BED3CF;          /* Fundo Claro Acinzentado */
-  
+
   --bg-main: #f4f7f6;          /* Fundo com descanso visual */
   --bg-card: #ffffff;
   --text-main: #0b1a24;        /* Contraste máximo para leitura confortável */
   --error: #dc2626;            /* Vermelho Acessível */
   --success: #15803d;          /* Verde Acessível */
+
+  /* 🌗 Superfícies auxiliares usadas nos módulos (funcionam no claro e escuro) */
+  --surface-input: #f8fafb;
+  --surface-input-focus: #ffffff;
+  --surface-danger: #fee2e2;
+  --surface-danger-hover: #fca5a5;
+  --surface-muted: #e2e8f0;
+  --surface-muted-hover: #cbd5e1;
+  --text-on-primary: #ffffff;
+  --text-on-accent: #ffffff;
+  --bg-soft-hover: #a3bcba;
+
+  color-scheme: light;
+}
+
+/* 🌙 TEMA ESCURO: aplicado pelo atributo data-theme no <html> */
+[data-theme="dark"] {
+  --primary: #86c7ea;
+  --primary-hover: #9fd3f0;
+  --accent-cyan: #4ec3d9;
+  --accent-light: #1d4c5c;
+  --muted-teal: #9cc6d1;
+  --bg-soft: #1f343d;
+
+  --bg-main: #0e191f;
+  --bg-card: #17262e;
+  --text-main: #e7eef1;
+  --error: #f87171;
+  --success: #4ade80;
+
+  --surface-input: #1a2b34;
+  --surface-input-focus: #20343e;
+  --surface-danger: #3b1a1a;
+  --surface-danger-hover: #512626;
+  --surface-muted: #263840;
+  --surface-muted-hover: #31464f;
+  --text-on-primary: #0b1a24;
+  --text-on-accent: #0b1a24;
+  --bg-soft-hover: #2a4550;
+
+  color-scheme: dark;
 }
 
 * {
@@ -25,4 +66,5 @@ body {
   background-color: var(--bg-main);
   color: var(--text-main);
   -webkit-font-smoothing: antialiased;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }

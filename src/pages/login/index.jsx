@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import PasswordInput from '../../components/PasswordInput';
 import styles from './Login.module.css';
 
 export default function Login() {
@@ -43,7 +44,8 @@ export default function Login() {
   return (
     <main className={styles.container}>
       <section className={styles.card} aria-labelledby="login-title">
-        <h1 id="login-title" className={styles.title}>Login do Administrador</h1>
+        <h1 id="login-title" className={styles.title}>Gerenciador de Eventos</h1>
+        <p className={styles.subtitle}>Login do administrador</p>
         
         <form onSubmit={handleLogin} className={styles.form} noValidate>
           {erro && (
@@ -69,16 +71,13 @@ export default function Login() {
 
           <div className={styles.inputGroup}>
             <label htmlFor="senha" className={styles.label}>Senha</label>
-            <input
-              type="password"
+            <PasswordInput
               id="senha"
-              className={styles.input}
               value={senha}
               onChange={(e) => setSenha(e.target.value)}
               placeholder="Sua senha segura"
               disabled={carregando}
               required
-              aria-required="true"
             />
           </div>
 

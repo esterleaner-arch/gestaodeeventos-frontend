@@ -28,6 +28,16 @@
   letter-spacing: -0.025em;
 }
 
+.brand {
+  font-size: 0.85rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--accent-cyan);
+  text-align: center;
+  margin-bottom: 0.5rem;
+}
+
 .form {
   display: flex;
   flex-direction: column;
@@ -51,14 +61,15 @@
   border: 1px solid rgba(82, 140, 157, 0.4);
   border-radius: 0.5rem;
   font-size: 1rem;
-  background-color: #f8fafb;
+  background-color: var(--surface-input);
+  color: var(--text-main);
   outline: none;
   transition: all 0.2s ease-in-out;
 }
 
 /* ♿ ACESSIBILIDADE: Destaque nítido de foco com sombra ciana ao usar o teclado (Tab) */
 .input:focus-visible, .input:focus {
-  background-color: #ffffff;
+  background-color: var(--surface-input-focus);
   border-color: var(--accent-cyan);
   box-shadow: 0 0 0 4px rgba(20, 136, 156, 0.2);
 }
@@ -114,7 +125,7 @@
 
 .buttonPrimary {
   background-color: var(--primary);
-  color: #ffffff;
+  color: var(--text-on-primary);
   box-shadow: 0 4px 6px rgba(4, 77, 120, 0.15);
 }
 
@@ -138,9 +149,19 @@
 }
 
 .alertError {
-  background-color: #fee2e2;
+  background-color: var(--surface-danger);
   border-left: 4px solid var(--error);
   color: var(--error);
+  padding: 0.875rem;
+  border-radius: 0.25rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.alertSuccess {
+  background-color: rgba(21, 128, 61, 0.12);
+  border-left: 4px solid var(--success);
+  color: var(--success);
   padding: 0.875rem;
   border-radius: 0.25rem;
   font-size: 0.875rem;

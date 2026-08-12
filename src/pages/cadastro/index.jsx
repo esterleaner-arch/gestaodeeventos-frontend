@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../../services/api';
+import PasswordInput from '../../components/PasswordInput';
 import styles from './Cadastro.module.css';
 
 export default function Cadastro() {
@@ -57,6 +58,7 @@ export default function Cadastro() {
   return (
     <main className={styles.container}>
       <section className={styles.card} aria-labelledby="cadastro-title">
+        <p className={styles.brand}>Gerenciador de Eventos</p>
         <h1 id="cadastro-title" className={styles.title}>Cadastro do Administrador</h1>
         
         <form onSubmit={handleCadastro} className={styles.form} noValidate>
@@ -104,31 +106,27 @@ export default function Cadastro() {
 
           <div className={styles.inputGroup}>
             <label htmlFor="senha" className={styles.label}>Senha</label>
-            <input
-              type="password"
+            <PasswordInput
               id="senha"
-              className={styles.input}
               value={senha}
               onChange={(e) => setSenha(e.target.value)}
               placeholder="Mínimo 6 caracteres"
               disabled={carregando}
               required
-              aria-required="true"
+              autoComplete="new-password"
             />
           </div>
 
           <div className={styles.inputGroup}>
             <label htmlFor="confirmarSenha" className={styles.label}>Confirmar Senha</label>
-            <input
-              type="password"
+            <PasswordInput
               id="confirmarSenha"
-              className={styles.input}
               value={confirmarSenha}
               onChange={(e) => setConfirmarSenha(e.target.value)}
               placeholder="Repita a senha digitada"
               disabled={carregando}
               required
-              aria-required="true"
+              autoComplete="new-password"
             />
           </div>
 

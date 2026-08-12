@@ -20,6 +20,15 @@
   margin-top: 0.25rem;
 }
 
+.brand {
+  font-size: 0.85rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--accent-cyan);
+  margin-bottom: 0.35rem;
+}
+
 .headerActions {
   display: flex;
   flex-direction: column;
@@ -29,7 +38,7 @@
 
 .buttonAdd {
   background-color: var(--primary);
-  color: #ffffff;
+  color: var(--text-on-primary);
   padding: 0.85rem 1.75rem;
   border-radius: 0.5rem;
   font-weight: 700;
@@ -158,16 +167,16 @@
 }
 
 .buttonEdit:hover { 
-  background-color: #a3bcba; 
+  background-color: var(--bg-soft-hover); 
 }
 
 .buttonDelete { 
-  background-color: #fee2e2; 
+  background-color: var(--surface-danger); 
   color: var(--error); 
 }
 
 .buttonDelete:hover { 
-  background-color: #fca5a5; 
+  background-color: var(--surface-danger-hover); 
 }
 
 /* 🧱 LAYOUT DA MODAL COM ACESSIBILIDADE DE TELA (ARIA-MODAL) */
@@ -184,7 +193,7 @@
 }
 
 .modalContent {
-  background: #ffffff;
+  background: var(--bg-card);
   padding: 2.25rem 2rem;
   border-radius: 1rem;
   width: 100%;
@@ -218,13 +227,14 @@
   border-radius: 0.5rem; 
   outline: none;
   font-size: 1rem;
-  background-color: #f8fafb;
+  background-color: var(--surface-input);
+  color: var(--text-main);
   transition: all 0.2s;
 }
 
 .inputGroup input:focus {
   border-color: var(--accent-cyan);
-  background-color: #ffffff;
+  background-color: var(--surface-input-focus);
   box-shadow: 0 0 0 3px rgba(20, 136, 156, 0.2);
 }
 
@@ -236,7 +246,7 @@
 
 .buttonSave { 
   background-color: var(--accent-cyan); 
-  color: #ffffff; 
+  color: var(--text-on-accent); 
   border: none; 
   padding: 0.85rem; 
   flex: 1; 
@@ -251,8 +261,8 @@
 }
 
 .buttonCancel { 
-  background-color: #e2e8f0; 
-  color: #475569; 
+  background-color: var(--surface-muted); 
+  color: var(--text-main); 
   border: none; 
   padding: 0.85rem; 
   flex: 1; 
@@ -263,11 +273,11 @@
 }
 
 .buttonCancel:hover {
-  background-color: #cbd5e1;
+  background-color: var(--surface-muted-hover);
 }
 
 .alertError { 
-  background-color: #fee2e2; 
+  background-color: var(--surface-danger); 
   border-left: 4px solid var(--error);
   color: var(--error); 
   padding: 0.85rem; 
@@ -300,4 +310,12 @@
 
 @media (min-width: 1024px) {
   .grid { grid-template-columns: repeat(3, 1fr); } /* 3 Colunas para Monitores */
+}
+
+/* 📱 RESPONSIVIDADE: modal ocupa a tela com rolagem no celular */
+@media (max-width: 640px) {
+  .modalContent {
+    max-height: 88vh;
+    overflow-y: auto;
+  }
 }

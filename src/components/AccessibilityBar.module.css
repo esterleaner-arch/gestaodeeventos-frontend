@@ -1,0 +1,67 @@
+.bar {
+  position: fixed;
+  bottom: 1rem;
+  left: 1rem;
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  background-color: var(--bg-card);
+  border: 1px solid rgba(82, 140, 157, 0.35);
+  border-radius: 999px;
+  padding: 0.35rem 0.5rem;
+  box-shadow: 0 6px 16px rgba(11, 26, 36, 0.15);
+}
+
+.group {
+  display: flex;
+  align-items: center;
+  gap: 0.15rem;
+}
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  background-color: transparent;
+  border: none;
+  color: var(--primary);
+  font-weight: 700;
+  font-size: 0.875rem;
+  padding: 0.45rem 0.6rem;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.button:hover {
+  background-color: var(--bg-soft);
+}
+
+/* ♿ ACESSIBILIDADE: Destaque de foco por teclado */
+.button:focus-visible {
+  outline: 3px solid var(--accent-cyan);
+  outline-offset: 2px;
+}
+
+.button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.fontLevel {
+  min-width: 3rem;
+  text-align: center;
+  color: var(--muted-teal);
+  font-weight: 700;
+  font-size: 0.875rem;
+}
+
+/* 📱 RESPONSIVIDADE: em telas pequenas mantém a barra agrupada à esquerda */
+@media (max-width: 640px) {
+  .bar {
+    right: 1rem;
+    justify-content: center;
+  }
+}

@@ -154,6 +154,7 @@ export default function Home() {
     <div className={styles.container}>
       <header className={styles.header}>
         <div>
+          <p className={styles.brand}>Gerenciador de Eventos</p>
           <h1>Painel de Eventos</h1>
           <p className={styles.subtitle}>Gerenciamento de eventos associados à sua conta</p>
         </div>

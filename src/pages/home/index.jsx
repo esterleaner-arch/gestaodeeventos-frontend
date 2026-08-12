@@ -85,7 +85,7 @@ export default function Home() {
       data,
       localizacao: localizacao.trim(),
       // Capa opcional: sem URL, envia null e o card exibe um placeholder
-      imagemUrl: imagemUrl.trim() || null,
+      imagemUrl: (imagemUrl || '').trim() || null,
       adminId: Number(user.id)
     };
 
@@ -132,7 +132,7 @@ export default function Home() {
     setNome(evento.nome);
     setData(evento.data);
     setLocalizacao(evento.localizacao);
-    setImagemUrl(evento.imagemUrl);
+    setImagemUrl(evento.imagemUrl || '');
     setModalAberta(true);
   };
 
@@ -224,7 +224,6 @@ export default function Home() {
                   type="text" 
                   value={nome} 
                   onChange={e => setNome(e.target.value)} 
-                  disabled={!!editandoId} // Bloqueia nome na edição (Requisito 5 pede apenas data/local)
                   required 
                 />
               </div>
